@@ -14,7 +14,8 @@
  * 
  */
 #include "DHT.h"
-#include "ESP8266WiFi.h"
+#include <ESP8266WiFi.h>
+#include <FirebaseArduino.h>
 
 #define DHTPIN 2     // what digital pin we're connected to
 #define LIGHT 3
@@ -53,6 +54,8 @@ void setup() {
   Serial.println(WiFi.localIP());
   
   dht.begin();
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+  Firebase.set("buzzer", 10000);
 }
 
 void loop() {
@@ -93,4 +96,10 @@ void loop() {
   Serial.print(" *C ");
   Serial.print(hif);
   Serial.println(" *F");
+  int i = 0;
+  for(i=0;i<100;i++){
+    Firebase.set("buzzer", i);
+    Serial.print(i);
+    delay(200);
+    }
 }
