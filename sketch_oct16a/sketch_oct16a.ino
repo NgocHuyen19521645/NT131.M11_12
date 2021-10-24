@@ -7,18 +7,16 @@
  *         
  * Tùy chọn tên của cảm biến cho phù hợp
  * Nạp code mở Serial Monitor, chọn No line ending, baud 9600
- * 
- * 
- * 
- * 
- * 
  */
 #include "DHT.h"
-#include <ESP8266WiFi.h>
+#include "ESP8266WiFi.h"
+#include <ESP8266Ping.h>
 #include <FirebaseArduino.h>
 
 #define DHTPIN 2     // what digital pin we're connected to
 #define LIGHT 3
+#define FIREBASE_HOST "trusty-gradient-326214-default-rtdb.asia-southeast1.firebasedatabase.app"
+#define FIREBASE_AUTH "GH6fNjR6LMFtyw29e3ZizETYidWx53oNeV9msVO8"
 
 // Chọn loại cảm biến cho phù hợp ---------------------------------------------------------------------------------------
 #define DHTTYPE DHT11   // DHT 11
@@ -52,17 +50,32 @@ void setup() {
   // Print the IP address
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+  Firebase.setString("buzzer", "ahihi");
   
   dht.begin();
-  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
-  Firebase.set("buzzer", 10000);
 }
 
 void loop() {
   // Wait a few seconds between measurements.
   delay(2000);
 
-  Serial.println(digitalRead(LIGHT));
+  int i = 0;
+  for(i=0;i<20;i++){
+    Firebase.setInt("buzzer", i);
+    if(Firebase.failed())
+    {
+      Serial.println("Setting failed");
+      Serial.println(Firebase.error());
+      return;
+    }
+    Serial.println(i);
+    delay(200);
+  }
+
+  Serial.print("Gas: ");
+  Serial.println(analogRead(A0));
 
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
@@ -96,10 +109,4 @@ void loop() {
   Serial.print(" *C ");
   Serial.print(hif);
   Serial.println(" *F");
-  int i = 0;
-  for(i=0;i<100;i++){
-    Firebase.set("buzzer", i);
-    Serial.print(i);
-    delay(200);
-    }
 }
