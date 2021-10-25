@@ -11,6 +11,8 @@
 #include "DHT.h"
 #include "ESP8266WiFi.h"
 #include <ESP8266Ping.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 #include <FirebaseArduino.h>
 
 #define DHTPIN 2     // what digital pin we're connected to
@@ -23,12 +25,14 @@
 //#define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
 
-
 DHT dht(DHTPIN, DHTTYPE);
 
 // Wifi SSID, pass
 const char* ssid = "Ngoc Phong";
 const char* pass = "01657096210";
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org");
 
 void setup() {
   Serial.begin(9600);
@@ -52,28 +56,22 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
-  Firebase.setString("buzzer", "ahihi");
   
   dht.begin();
+  timeClient.begin();
+  timeClient.setTimeOffset(7*3600);
 }
+
+int i = 0;
+long sample_time = 2000; //ms
 
 void loop() {
   // Wait a few seconds between measurements.
-  delay(2000);
-
-  int i = 0;
-  for(i=0;i<20;i++){
-    Firebase.setInt("buzzer", i);
-    if(Firebase.failed())
-    {
-      Serial.println("Setting failed");
-      Serial.println(Firebase.error());
-      return;
-    }
-    Serial.println(i);
-    delay(200);
-  }
-
+  delay(sample_time);
+  
+  timeClient.update();
+  Serial.println(timeClient.getFormattedTime());
+  
   Serial.print("Gas: ");
   Serial.println(analogRead(A0));
 
@@ -85,7 +83,21 @@ void loop() {
   // Read temperature as Fahrenheit (isFahrenheit = true)
   float f = dht.readTemperature(true);
 
-  // Check if any reads failed and exit early (to try again).
+  DynamicJsonBuffer jsonBuffer;
+  // Push to Firebase
+  JsonObject& temperatureObject = jsonBuffer.createObject();
+  temperatureObject["Temperature"] = t;
+  temperatureObject["Humidity"] = h;
+  temperatureObject["Time"] = timeClient.getFormattedTime();
+  Firebase.push("/DHTSensor/", temperatureObject);
+  if(Firebase.failed())
+  {
+    Serial.println("Setting failed");
+    Serial.println(Firebase.error());
+    return;
+  }
+
+  // Kiểm tra có đọc được dữ liệu từ sensor hay không
   if (isnan(h) || isnan(t) || isnan(f)) {
     Serial.println("Failed to read from DHT sensor!");
     return;
