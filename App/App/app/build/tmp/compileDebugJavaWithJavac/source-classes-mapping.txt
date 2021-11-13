@@ -1,0 +1,7 @@
+com/example/monitorapp/BuildConfig.java
+ com.example.monitorapp.BuildConfig
+com/example/monitorapp/MainActivity.java
+ com.example.monitorapp.MainActivity
+ com.example.monitorapp.MainActivity$1
+com/example/monitorapp/DHTSensor.java
+ com.example.monitorapp.DHTSensor
