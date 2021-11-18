@@ -63,7 +63,7 @@ void setup() {
 }
 
 int i = 0;
-long sample_time = 2000; //ms
+long sample_time = 10000; //ms
 
 String getCurrentTime(unsigned long &epoch)
 {

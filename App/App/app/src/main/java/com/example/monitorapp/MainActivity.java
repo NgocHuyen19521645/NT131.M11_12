@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -165,9 +166,11 @@ public class MainActivity extends AppCompatActivity  {
     private TextView icPrint;
     private TextView icSettings;
     private DatabaseReference reference;
+    private Button btnClearWarning;
     private ArrayList<UserThreshold> userThresholdArrayList;
     private ArrayList<Warning> warningArrayList;
     WarningAdapter warningAdapter;
+    Warning warning;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
@@ -179,6 +182,7 @@ public class MainActivity extends AppCompatActivity  {
         icPrint = (TextView) findViewById(R.id.idicPrint);
         icSettings = (TextView) findViewById(R.id.idicSettings);
         listView = (ListView) findViewById(R.id.idlvWarning);
+        btnClearWarning = (Button) findViewById(R.id.clearLV);
 
         userThresholdArrayList = new ArrayList<>();
         warningArrayList = new ArrayList<>();
@@ -270,7 +274,14 @@ public class MainActivity extends AppCompatActivity  {
                 takeScreenshot();
             }
         });
-
+        btnClearWarning.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                warningArrayList.clear();
+                listView.setAdapter(warningAdapter);
+                warningAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     private void takeScreenshot() {
