@@ -157,8 +157,9 @@ public class MainActivity2 extends AppCompatActivity implements SeekBar.OnSeekBa
                 return false;
         }
 
+        boolean nochecked=!ckbGas.isChecked() && !ckbTemp.isChecked() && !ckbHumid.isChecked();
         str = edtMessage.getText().toString();
-        return str.trim().length()>0;
+        return str.trim().length()>0 && !nochecked;
     }
 
     private void InputUserThreshold() {

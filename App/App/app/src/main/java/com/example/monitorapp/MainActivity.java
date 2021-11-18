@@ -35,6 +35,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
@@ -192,68 +193,78 @@ public class MainActivity extends AppCompatActivity  {
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Query lastQuery = reference.orderByKey().limitToLast(1);
+                lastQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                            DHTSensor dhtSensor = snapshot.getValue(DHTSensor.class);
+                            //getData from Firebase
+                            double humid = dhtSensor.getHumidity();
+                            double temp = dhtSensor.getTemperature();
+                            long gas = dhtSensor.getGas();
+                            String timestamp = dhtSensor.getTime();
+                            //setext To Screen
+                            tvHumid.setText((String.valueOf(humid)));
+                            tvGas.setText(String.valueOf(gas));
+                            tvTemp.setText(String.valueOf(temp));
 
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    DHTSensor dhtSensor = snapshot.getValue(DHTSensor.class);
-                    //getData from Firebase
-                    double humid = dhtSensor.getHumidity();
-                    double temp = dhtSensor.getTemperature();
-                    long gas = dhtSensor.getGas();
-                    String timestamp = dhtSensor.getTime();
-                    //setext To Screen
-                    tvHumid.setText((String.valueOf(humid)));
-                    tvGas.setText(String.valueOf(gas));
-                    tvTemp.setText(String.valueOf(temp));
-
-                    if(temp > 40 ){
-                        Warning warning = new Warning(timestamp, "High Temperature");
-                        warningArrayList.add(warning);
-                        listView.setAdapter(warningAdapter);
-                        warningAdapter.notifyDataSetChanged();
-                    }
-                    if(humid < 20){
-                        Warning warning = new Warning(timestamp, "Low Humid");
-                        warningArrayList.add(warning);
-                        listView.setAdapter(warningAdapter);
-                        warningAdapter.notifyDataSetChanged();
-                    }
-
-                    if(gas > 40000){
-                        Warning warning = new Warning(timestamp, "High Gas");
-                        warningArrayList.add(warning);
-                        listView.setAdapter(warningAdapter);
-                        warningAdapter.notifyDataSetChanged();
-                    }
-                    //Receive Data From Activity2
-
-
-                    Intent intent = getIntent();
-                    Bundle bundle = intent.getBundleExtra("sendUserThreshold");
-                    if(bundle != null){
-                        userThresholdArrayList = (ArrayList<UserThreshold>) bundle.getSerializable("lstuserThreshhold");
-                        for(int i=0; i < userThresholdArrayList.size(); i++){
-                            if((temp >  userThresholdArrayList.get(i).listThreshold[0].getValue()  && userThresholdArrayList.get(i).listThreshold[0].isGreater() && userThresholdArrayList.get(i).listThreshold[0].isUse()) ||
-                                    ((humid >  userThresholdArrayList.get(i).listThreshold[1].getValue()  && userThresholdArrayList.get(i).listThreshold[1].isGreater() && userThresholdArrayList.get(i).listThreshold[1].isUse())) ||
-                                    ((gas >  userThresholdArrayList.get(i).listThreshold[2].getValue()  && userThresholdArrayList.get(i).listThreshold[2].isGreater() && userThresholdArrayList.get(i).listThreshold[2].isUse()))
-                            ){
-                                Warning warning = new Warning(timestamp, userThresholdArrayList.get(i).getMessage());
+                            if(temp > 40 ){
+                                Warning warning = new Warning(timestamp, "High Temperature");
                                 warningArrayList.add(warning);
                                 listView.setAdapter(warningAdapter);
                                 warningAdapter.notifyDataSetChanged();
                             }
-                            if((temp <  userThresholdArrayList.get(i).listThreshold[0].getValue()  && (!userThresholdArrayList.get(i).listThreshold[0].isGreater()) && userThresholdArrayList.get(i).listThreshold[0].isUse()) ||
-                                    ((humid <  userThresholdArrayList.get(i).listThreshold[1].getValue()  && (!userThresholdArrayList.get(i).listThreshold[1].isGreater()) && userThresholdArrayList.get(i).listThreshold[1].isUse())) ||
-                                    ((gas <  userThresholdArrayList.get(i).listThreshold[2].getValue()  && (!userThresholdArrayList.get(i).listThreshold[2].isGreater()) && userThresholdArrayList.get(i).listThreshold[2].isUse()))
-                            ){
-                                Warning warning = new Warning(timestamp, userThresholdArrayList.get(i).getMessage());
+                            if(humid < 20){
+                                Warning warning = new Warning(timestamp, "Low Humid");
                                 warningArrayList.add(warning);
                                 listView.setAdapter(warningAdapter);
                                 warningAdapter.notifyDataSetChanged();
                             }
+
+                            if(gas > 40000){
+                                Warning warning = new Warning(timestamp, "High Gas");
+                                warningArrayList.add(warning);
+                                listView.setAdapter(warningAdapter);
+                                warningAdapter.notifyDataSetChanged();
+                            }
+                            //Receive Data From Activity2
+
+
+                            Intent intent = getIntent();
+                            Bundle bundle = intent.getBundleExtra("sendUserThreshold");
+                            if(bundle != null){
+                                userThresholdArrayList = (ArrayList<UserThreshold>) bundle.getSerializable("lstuserThreshhold");
+                                for(int i=0; i < userThresholdArrayList.size(); i++){
+                                    if((temp >  userThresholdArrayList.get(i).listThreshold[0].getValue()  && userThresholdArrayList.get(i).listThreshold[0].isGreater() && userThresholdArrayList.get(i).listThreshold[0].isUse()) ||
+                                            ((humid >  userThresholdArrayList.get(i).listThreshold[1].getValue()  && userThresholdArrayList.get(i).listThreshold[1].isGreater() && userThresholdArrayList.get(i).listThreshold[1].isUse())) ||
+                                            ((gas >  userThresholdArrayList.get(i).listThreshold[2].getValue()  && userThresholdArrayList.get(i).listThreshold[2].isGreater() && userThresholdArrayList.get(i).listThreshold[2].isUse()))
+                                    ){
+                                        Warning warning = new Warning(timestamp, userThresholdArrayList.get(i).getMessage());
+                                        warningArrayList.add(warning);
+                                        listView.setAdapter(warningAdapter);
+                                        warningAdapter.notifyDataSetChanged();
+                                    }
+                                    if((temp <  userThresholdArrayList.get(i).listThreshold[0].getValue()  && (!userThresholdArrayList.get(i).listThreshold[0].isGreater()) && userThresholdArrayList.get(i).listThreshold[0].isUse()) ||
+                                            ((humid <  userThresholdArrayList.get(i).listThreshold[1].getValue()  && (!userThresholdArrayList.get(i).listThreshold[1].isGreater()) && userThresholdArrayList.get(i).listThreshold[1].isUse())) ||
+                                            ((gas <  userThresholdArrayList.get(i).listThreshold[2].getValue()  && (!userThresholdArrayList.get(i).listThreshold[2].isGreater()) && userThresholdArrayList.get(i).listThreshold[2].isUse()))
+                                    ){
+                                        Warning warning = new Warning(timestamp, userThresholdArrayList.get(i).getMessage());
+                                        warningArrayList.add(warning);
+                                        listView.setAdapter(warningAdapter);
+                                        warningAdapter.notifyDataSetChanged();
+                                    }
+                                }
+                            }
+
                         }
                     }
 
-                }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
 
             }
             @Override
@@ -261,6 +272,7 @@ public class MainActivity extends AppCompatActivity  {
 
             }
         });
+
         icSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
