@@ -37,32 +37,14 @@ import java.util.List;
 public class MainActivity3 extends AppCompatActivity implements OnChartValueSelectedListener {
     private CombinedChart mChart;
     private TextView tv;
+    private double realtimeData[];
+    private int count;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main3);
-
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("DHTSensor");
-        // Read from the database
-        myRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-//                String value = dataSnapshot.getValue(Long);
-//                TextView tvFirebase = (TextView) findViewById(R.id.tvFirebase);
-//                tvFirebase.setText("Giabao");
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-            }
-        });
-
-
+        realtimeData = new double[30];
+        count = 10;
 
         tv = (TextView) findViewById(R.id.textView);
 
@@ -82,24 +64,10 @@ public class MainActivity3 extends AppCompatActivity implements OnChartValueSele
         leftAxis.setDrawGridLines(false);
         leftAxis.setAxisMinimum(0f);
 
-        YAxis left = mChart.getAxisLeft();
-        left.setDrawGridLines(false);
-        left.setAxisMinimum(0f);
-
         final List<String> xLabel = new ArrayList<>();
-        xLabel.add("Jan");
-        xLabel.add("Feb");
-        xLabel.add("Mar");
-        xLabel.add("Apr");
-        xLabel.add("May");
-        xLabel.add("Jun");
-        xLabel.add("Jul");
-        xLabel.add("Aug");
-        xLabel.add("Sep");
-        xLabel.add("Oct");
-        xLabel.add("Nov");
-        xLabel.add("Dec");
-
+        for (int i=count-1; i>=0; i--) {
+            xLabel.add(String.valueOf(i));
+        }
         XAxis xAxis = mChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setAxisMinimum(0f);
@@ -111,19 +79,58 @@ public class MainActivity3 extends AppCompatActivity implements OnChartValueSele
             }
         });
 
-        CombinedData data = new CombinedData();
-        LineData lineDatas = new LineData();
-        lineDatas.addDataSet((ILineDataSet) dataChart());
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference("DHTSensor");
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Query query = myRef.orderByKey().limitToLast(count);
+                query.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        int i=0;
+                        double maxValue=0;
+                        double minValue=50;
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                            DHTSensor element = snapshot.getValue(DHTSensor.class);
+                            realtimeData[i] = (float)element.getTemperature();
+                            if (maxValue<realtimeData[i])
+                                maxValue=realtimeData[i];
+                            if (minValue>realtimeData[i])
+                                minValue=realtimeData[i];
+                            tv.setText(String.valueOf(element.getTemperature()));
+                            i++;
+                        }
 
-        data.setData(lineDatas);
+                        rightAxis.setAxisMaximum((float)maxValue+10);
+                        rightAxis.setAxisMinimum((float)minValue-10);
+                        leftAxis.setAxisMaximum((float)maxValue+10);
+                        leftAxis.setAxisMinimum((float)minValue-10);
+                        CombinedData data = new CombinedData();
+                        LineData lineDatas = new LineData();
+                        lineDatas.addDataSet((ILineDataSet) dataChart(realtimeData, count));
 
-        xAxis.setAxisMaximum(data.getXMax() + 0.25f);
+                        data.setData(lineDatas);
 
-        mChart.setData(data);
-        mChart.invalidate();
+                        xAxis.setAxisMaximum(data.getXMax() + 0.25f);
 
-        float[] arr = left.mEntries;
-        tv.setText(String.valueOf(arr[0]) + String.valueOf(arr[1]));
+                        mChart.setData(data);
+                        mChart.invalidate();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
     @Override
@@ -141,42 +148,12 @@ public class MainActivity3 extends AppCompatActivity implements OnChartValueSele
 
     }
 
-    private static DataSet dataChart() {
-
+    private static DataSet dataChart(double data[], int count) {
         LineData d = new LineData();
         //int[] data = new int[] { 1, 2, 2, 1, 1, 1, 2, 1, 1, 2, 1, 9 };
         ArrayList<Entry> entries = new ArrayList<Entry>();
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("DHTSensor");
-        myRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Query query = myRef.orderByKey().limitToLast(30);
-                query.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        int index=30-1;
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                            DHTSensor element = snapshot.getValue(DHTSensor.class);
-                            entries.add(new Entry(index, element.getTemperature()));
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        for (int index = 0; index < 12; index++) {
-            entries.add(new Entry(index, data[index]));
+        for (int index = 0; index < count; index++) {
+            entries.add(new Entry(index, (float)data[index]));
         }
 
         LineDataSet set = new LineDataSet(entries, "Request Ots approved");
