@@ -65,16 +65,28 @@ void setup() {
 int i = 0;
 long sample_time = 2000; //ms
 
+String getCurrentTime(unsigned long &epoch)
+{
+  unsigned long epochTime = timeClient.getEpochTime();
+  struct tm *ptm = gmtime ((time_t *)&epochTime);
+  int dd = ptm->tm_mday;
+  int mm = ptm->tm_mon+1;
+  int yy = ptm->tm_year+1900;
+  String currentTime = timeClient.getFormattedTime()
+                      + " " + String(dd)
+                      + "/" + String(mm)
+                      + "/" + String(yy);
+  epoch = epochTime;
+  return currentTime;
+}
+
 void loop() {
   // Wait a few seconds between measurements.
   delay(sample_time);
   
   timeClient.update();
-  Serial.println(timeClient.getFormattedTime());
   
-  Serial.print("Gas: ");
-  Serial.println(analogRead(A0));
-
+  float gas = analogRead(A0);
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   float h = dht.readHumidity();
@@ -82,14 +94,18 @@ void loop() {
   float t = dht.readTemperature();
   // Read temperature as Fahrenheit (isFahrenheit = true)
   float f = dht.readTemperature(true);
+  unsigned long epoch;
+  String curTime = getCurrentTime(epoch);
+  Serial.println(curTime);
 
   DynamicJsonBuffer jsonBuffer;
   // Push to Firebase
   JsonObject& temperatureObject = jsonBuffer.createObject();
   temperatureObject["Temperature"] = t;
   temperatureObject["Humidity"] = h;
-  temperatureObject["Time"] = timeClient.getFormattedTime();
-  Firebase.push("/DHTSensor/", temperatureObject);
+  temperatureObject["Gas"] = gas;
+  temperatureObject["Time"] = curTime;
+  Firebase.set("/DHTSensor/"+String(epoch), temperatureObject);
   if(Firebase.failed())
   {
     Serial.println("Setting failed");
@@ -108,6 +124,8 @@ void loop() {
   // Compute heat index in Celsius (isFahreheit = false)
   float hic = dht.computeHeatIndex(t, h, false);
 
+  Serial.print("Gas: ");
+  Serial.println(gas);
   Serial.print("Humidity: ");
   Serial.print(h);
   Serial.print(" %t");
