@@ -2,21 +2,29 @@ package com.example.monitorapp;
 
 import android.widget.Switch;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class UserThreshold {
+public class UserThreshold implements Serializable {
     enum IndexName {
         TEMP(0), HUMID(1), GAS(2);
 
         private int value;
 
+        public int getValue() {
+            return value;
+        }
+
+        public void setValue(int value) {
+            this.value = value;
+        }
         private IndexName(int value) {
             this.value = value;
         }
     }
-    private IndexThreshold[] listThreshold;
+    public IndexThreshold[] listThreshold;
     private String message;
     private String ID;
 

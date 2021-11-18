@@ -1,6 +1,8 @@
 package com.example.monitorapp;
 
-public class IndexThreshold {
+import java.io.Serializable;
+
+public class IndexThreshold implements Serializable {
     private float value;
     private boolean isGreater;
     private boolean isUse;

@@ -201,6 +201,7 @@
         android:text="Lưu kết quả"
         app:layout_constraintBottom_toTopOf="@id/tvLabel"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.183"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edtMessage" />
 
@@ -215,8 +216,8 @@
 
     <ListView
         android:id="@+id/lvMessage"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="411dp"
+        android:layout_height="399dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -260,5 +261,16 @@
         app:layout_constraintBottom_toTopOf="@+id/ckbTempGreater"
         app:layout_constraintStart_toStartOf="@+id/ckbTempGreater"
         app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+    <Button
+        android:id="@+id/idbtnHomeback"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="5dp"
+        android:text="Back To Home"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btSave"
+        app:layout_constraintTop_toBottomOf="@+id/edtMessage" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

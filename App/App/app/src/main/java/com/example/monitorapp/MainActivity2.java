@@ -2,6 +2,7 @@ package com.example.monitorapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 
 import com.google.firebase.FirebaseApp;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +39,8 @@ public class MainActivity2 extends AppCompatActivity implements SeekBar.OnSeekBa
     private CheckBox ckbGas;
     private CheckBox ckbGasGreater;
     private EditText edtMessage;
-
+    private Button btnHome;
+    public static transient IndexThreshold indexThreshold = null;
     private TextView tvMessage;
     private ListView lvMessage;
     private Button btSave;
@@ -81,6 +84,18 @@ public class MainActivity2 extends AppCompatActivity implements SeekBar.OnSeekBa
                 adapter.notifyDataSetChanged();
                 TextView label = (TextView) findViewById(R.id.tvLabel);
                 label.setText("Các ngưỡng đã lưu: (" + arrMess.size() + ")");
+                //SEND AND RECEIVE LIST USERTHRESHOLD
+
+            }
+        });
+        btnHome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity2.this, MainActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("lstuserThreshhold", lstUserThresh);
+                intent.putExtra("sendUserThreshold", bundle);
+                startActivity(intent);
             }
         });
     }
@@ -176,6 +191,7 @@ public class MainActivity2 extends AppCompatActivity implements SeekBar.OnSeekBa
         t.setMessage(edtMessage.getText().toString());
         t.setID("user"+lstUserThresh.size());
         lstUserThresh.add(t);
+
     }
 
     private void GetIDView(){
@@ -196,7 +212,7 @@ public class MainActivity2 extends AppCompatActivity implements SeekBar.OnSeekBa
         edtMessage = (EditText) findViewById(R.id.edtMessage);
         lvMessage = (ListView) findViewById(R.id.lvMessage);
         btSave = (Button) findViewById(R.id.btSave);
-
+        btnHome = (Button) findViewById(R.id.idbtnHomeback);
         edtTemp.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {

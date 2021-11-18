@@ -4,17 +4,16 @@ public class DHTSensor {
     private double Humidity;
     private double Temperature;
     private long Gas;
+    private String Time;
 
-    public DHTSensor() {
-        this.Gas = 0;
-        this.Temperature = 0;
-        this.Gas = 0;
-    }
-
-    public DHTSensor(double humidity, double temperature, long gas) {
+    public DHTSensor(double humidity, double temperature, long gas, String timeStamp) {
         Humidity = humidity;
         Temperature = temperature;
         Gas = gas;
+        Time = timeStamp;
+    }
+
+    public DHTSensor() {
     }
 
     public double getHumidity() {
@@ -39,5 +38,13 @@ public class DHTSensor {
 
     public void setGas(long gas) {
         Gas = gas;
+    }
+
+    public String getTime() {
+        return Time;
+    }
+
+    public void setTime(String time) {
+        Time = time;
     }
 }
