@@ -1,12 +1,19 @@
 package com.example.monitorapp;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -30,13 +37,17 @@ import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -176,7 +187,19 @@ public class MainActivity extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
         setContentView(R.layout.activity_main);
+        //
+        FirebaseMessaging.getInstance().subscribeToTopic("weather")
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        String msg = "Done";
+                        if (!task.isSuccessful()) {
+                            msg = "Fail";
+                        }
+                    }
+                });
 
+        //
         tvHumid = (TextView) findViewById(R.id.idtvHumidValue);
         tvTemp = (TextView) findViewById(R.id.idtvTempValue);
         tvGas = (TextView) findViewById(R.id.idtvGasValue);
@@ -214,12 +237,14 @@ public class MainActivity extends AppCompatActivity  {
                                 warningArrayList.add(warning);
                                 listView.setAdapter(warningAdapter);
                                 warningAdapter.notifyDataSetChanged();
+                                notification();
                             }
                             if(humid < 20){
                                 Warning warning = new Warning(timestamp, "Low Humid");
                                 warningArrayList.add(warning);
                                 listView.setAdapter(warningAdapter);
                                 warningAdapter.notifyDataSetChanged();
+                                notification();
                             }
 
                             if(gas > 40000){
@@ -227,6 +252,7 @@ public class MainActivity extends AppCompatActivity  {
                                 warningArrayList.add(warning);
                                 listView.setAdapter(warningAdapter);
                                 warningAdapter.notifyDataSetChanged();
+                                notification();
                             }
                             //Receive Data From Activity2
 
@@ -244,6 +270,7 @@ public class MainActivity extends AppCompatActivity  {
                                         warningArrayList.add(warning);
                                         listView.setAdapter(warningAdapter);
                                         warningAdapter.notifyDataSetChanged();
+                                        notification();
                                     }
                                     if((temp <  userThresholdArrayList.get(i).listThreshold[0].getValue()  && (!userThresholdArrayList.get(i).listThreshold[0].isGreater()) && userThresholdArrayList.get(i).listThreshold[0].isUse()) ||
                                             ((humid <  userThresholdArrayList.get(i).listThreshold[1].getValue()  && (!userThresholdArrayList.get(i).listThreshold[1].isGreater()) && userThresholdArrayList.get(i).listThreshold[1].isUse())) ||
@@ -253,6 +280,7 @@ public class MainActivity extends AppCompatActivity  {
                                         warningArrayList.add(warning);
                                         listView.setAdapter(warningAdapter);
                                         warningAdapter.notifyDataSetChanged();
+                                        notification();
                                     }
                                 }
                             }
@@ -272,6 +300,33 @@ public class MainActivity extends AppCompatActivity  {
 
             }
         });
+        reference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                notification();
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
 
         icSettings.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -294,6 +349,20 @@ public class MainActivity extends AppCompatActivity  {
                 warningAdapter.notifyDataSetChanged();
             }
         });
+    }
+    private void notification(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel channel = new NotificationChannel("n", "n", NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "n")
+                .setSmallIcon(R.drawable.ic_baseline_print_24)
+                .setContentTitle("alo alo")
+                .setContentText("Thong bao neeee")
+                .setAutoCancel(true);
+        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
+        managerCompat.notify(999, builder.build());
     }
 
     private void takeScreenshot() {
