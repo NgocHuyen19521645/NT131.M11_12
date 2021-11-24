@@ -10,7 +10,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Đặt ngưỡng cảnh báo"
-        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@id/tvGreater"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -74,8 +73,8 @@
 
     <TextView
         android:id="@+id/tvHumid"
-        android:layout_width="56dp"
-        android:layout_height="19dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="Độ ẩm"
         app:layout_constraintBottom_toBottomOf="@+id/skbHumid"
         app:layout_constraintEnd_toEndOf="@id/tvTemp"
@@ -125,8 +124,8 @@
 
     <TextView
         android:id="@+id/tvGas"
-        android:layout_width="52dp"
-        android:layout_height="27dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="Khí gas"
         app:layout_constraintBottom_toBottomOf="@+id/skbGas"
         app:layout_constraintEnd_toEndOf="@+id/tvHumid"
