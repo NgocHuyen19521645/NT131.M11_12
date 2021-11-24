@@ -9,17 +9,18 @@
     <TextView
         android:id="@+id/idtvGroupName"
         android:layout_width="wrap_content"
-
+        android:textColor="@color/black"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
 
-        android:text="Quen Ten Nhom T.T"
+        android:text="Nhóm 12"
+        android:textStyle="bold"
+        android:textSize="18sp"
         app:layout_constraintEnd_toStartOf="@+id/idicSettings"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/idicPrint"
-        app:layout_constraintTop_toTopOf="parent"
 
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/idicPrint"
@@ -34,6 +35,7 @@
 
 
     <TextView
+        android:textColor="@color/black"
         android:id="@+id/idicSettings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -48,10 +50,10 @@
         android:id="@+id/idtvTemp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
+        android:textStyle="bold"
         android:layout_marginStart="16dp"
         android:layout_marginTop="50dp"
-        android:text="Nhiet do"
+        android:text="Nhiệt độ"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -60,8 +62,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="12dp"
-        android:text="Do am"
+        android:layout_marginTop="20dp"
+        android:text="Độ ẩm"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/idtvTemp" />
 
@@ -70,8 +73,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="12dp"
-        android:text="Gas"
+        android:layout_marginTop="16dp"
+        android:text="Khí gas"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/idtvHumid" />
 
@@ -82,7 +86,7 @@
         android:layout_marginStart="16dp"
 
         android:layout_marginTop="20dp"
-        android:text="Lua chon bieu do"
+        android:text="Lựa chọn biểu đồ"
         app:layout_constraintEnd_toStartOf="@+id/spinner"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -92,6 +96,7 @@
         android:id="@+id/spinner"
         android:layout_width="94dp"
         android:layout_height="24dp"
+        android:spinnerMode="dropdown"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -125,6 +130,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
         android:text="null"
+        android:textColor="@color/teal_200"
+        android:textStyle="bold"
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.547"
         app:layout_constraintStart_toEndOf="@+id/idtvTemp"
@@ -136,6 +144,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="null"
+        android:textColor="@color/teal_200"
+        android:textStyle="bold"
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.565"
         app:layout_constraintStart_toEndOf="@+id/idtvHumid"
@@ -147,12 +158,15 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="null"
+        android:textColor="@color/teal_200"
+        android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/textView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.587"
+        app:layout_constraintHorizontal_bias="0.557"
         app:layout_constraintStart_toEndOf="@+id/idtvGas"
         app:layout_constraintTop_toBottomOf="@+id/idtvHumidValue"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.157" />
 
     <Button
         android:id="@+id/clearLV"

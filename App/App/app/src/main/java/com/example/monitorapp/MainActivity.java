@@ -232,7 +232,8 @@ public class MainActivity extends AppCompatActivity  {
                             tvGas.setText(String.valueOf(gas));
                             tvTemp.setText(String.valueOf(temp));
 
-                            if(temp > 40 ){
+                            if(temp > 35 ){
+                                tvTemp.setTextColor(Color.RED);
                                 Warning warning = new Warning(timestamp, "High Temperature");
                                 warningArrayList.add(warning);
                                 listView.setAdapter(warningAdapter);
@@ -240,6 +241,7 @@ public class MainActivity extends AppCompatActivity  {
                                 notification("Default", "High Temperature");
                             }
                             if(humid < 20){
+                                tvTemp.setTextColor(Color.RED);
                                 Warning warning = new Warning(timestamp, "Low Humid");
                                 warningArrayList.add(warning);
                                 listView.setAdapter(warningAdapter);
@@ -248,6 +250,7 @@ public class MainActivity extends AppCompatActivity  {
                             }
 
                             if(gas > 40000){
+                                tvTemp.setTextColor(Color.RED);
                                 Warning warning = new Warning(timestamp, "High Gas");
                                 warningArrayList.add(warning);
                                 listView.setAdapter(warningAdapter);
@@ -269,6 +272,7 @@ public class MainActivity extends AppCompatActivity  {
                                             ((humid >  usrThreshold.listThreshold[1].getValue()  && usrThreshold.listThreshold[1].isGreater() && usrThreshold.listThreshold[1].isUse())) ||
                                             ((gas >  usrThreshold.listThreshold[2].getValue()  && usrThreshold.listThreshold[2].isGreater() && usrThreshold.listThreshold[2].isUse()))
                                     ){
+                                        tvTemp.setTextColor(Color.RED);
                                         Warning warning = new Warning(timestamp, usrThreshold.getMessage());
                                         warningArrayList.add(warning);
                                         listView.setAdapter(warningAdapter);
@@ -278,6 +282,7 @@ public class MainActivity extends AppCompatActivity  {
                                             ((humid <  usrThreshold.listThreshold[1].getValue()  && (!usrThreshold.listThreshold[1].isGreater()) && usrThreshold.listThreshold[1].isUse())) ||
                                             ((gas <  usrThreshold.listThreshold[2].getValue()  && (!usrThreshold.listThreshold[2].isGreater()) && usrThreshold.listThreshold[2].isUse()))
                                     ){
+                                        tvTemp.setTextColor(Color.RED);
                                         Warning warning = new Warning(timestamp, usrThreshold.getMessage());
                                         warningArrayList.add(warning);
                                         listView.setAdapter(warningAdapter);
