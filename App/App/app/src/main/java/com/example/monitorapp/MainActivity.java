@@ -110,25 +110,18 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
         listView = (ListView) findViewById(R.id.idlvWarning);
         btnClearWarning = (Button) findViewById(R.id.clearLV);
 
-
-
         userThresholdArrayList = new ArrayList<>();
         warningArrayList = new ArrayList<>();
         warningAdapter = new WarningAdapter(warningArrayList);
         ////
 
         ArrayList<String> chartString = new ArrayList<>();
-        chartString.add("Temp");
-        chartString.add("Humid");
-        chartString.add("Gas");
+        chartString.add("Nhiệt độ");
+        chartString.add("Độ ẩm");
+        chartString.add("Khí gas");
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.chart_spinner, chartString);
         this.spinner.setAdapter(adapter);
         String selectedChart = this.spinner.getSelectedItem().toString();
-
-        /*
-        * Code bieu do o day ne
-        *
-        * */
 
         // Hiển thị biểu đồ
         int numData = 30;
@@ -180,12 +173,12 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
                         int i=0;
                         double maxValue=0;
                         double minValue=50;
-                        if (choice=="Humid")
+                        if (choice=="Độ ẩm")
                         {
                             maxValue = 0;
                             minValue = 100;
                         }
-                        else if (choice=="Gas")
+                        else if (choice=="Khí gas")
                         {
                             maxValue = 0;
                             minValue = 40000;
@@ -195,10 +188,10 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
                             DHTSensor element = snapshot.getValue(DHTSensor.class);
                             switch (choice)
                             {
-                                case "Humid":
+                                case "Độ ẩm":
                                     realtimeData[i] = (float)element.getHumidity();
                                     break;
-                                case "Gas":
+                                case "Khí gas":
                                     realtimeData[i] = (float)element.getGas();
                                     break;
                                 default:
@@ -239,8 +232,6 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
 
             }
         });
-
-
         //
 
         reference = FirebaseDatabase.getInstance().getReference().child("DHTSensor");
@@ -290,7 +281,6 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
                             }
                             //Receive Data From Activity2
 
-
                             Intent intent = getIntent();
                             Bundle bundle = intent.getBundleExtra("sendUserThreshold");
                             if(bundle != null){
@@ -298,29 +288,55 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
                                 for(int i=0; i < userThresholdArrayList.size(); i++){
 
                                     UserThreshold usrThreshold = userThresholdArrayList.get(i);
-
-                                    if((temp >  usrThreshold.listThreshold[0].getValue()  && usrThreshold.listThreshold[0].isGreater() && usrThreshold.listThreshold[0].isUse()) ||
-                                            ((humid >  usrThreshold.listThreshold[1].getValue()  && usrThreshold.listThreshold[1].isGreater() && usrThreshold.listThreshold[1].isUse())) ||
-                                            ((gas >  usrThreshold.listThreshold[2].getValue()  && usrThreshold.listThreshold[2].isGreater() && usrThreshold.listThreshold[2].isUse()))
-                                    ){
+                                    boolean ketqua=true;
+                                    if(usrThreshold.listThreshold[0].isUse())
+                                    {
+                                        boolean t = !((temp >=  usrThreshold.listThreshold[0].getValue())  ^ usrThreshold.listThreshold[0].isGreater());
+                                        ketqua = ketqua && t;
+                                    }
+                                    if(usrThreshold.listThreshold[1].isUse())
+                                    {
+                                        boolean t = (humid >=  usrThreshold.listThreshold[1].getValue())  && usrThreshold.listThreshold[1].isGreater();
+                                        ketqua = ketqua && t;
+                                    }
+                                    if(usrThreshold.listThreshold[2].isUse())
+                                    {
+                                        boolean t = (gas >=  usrThreshold.listThreshold[2].getValue())  && usrThreshold.listThreshold[2].isGreater();
+                                        ketqua = ketqua && t;
+                                    }
+                                    if (ketqua==true)
+                                    {
                                         tvTemp.setTextColor(Color.RED);
                                         Warning warning = new Warning(timestamp, usrThreshold.getMessage());
                                         warningArrayList.add(warning);
                                         listView.setAdapter(warningAdapter);
                                         warningAdapter.notifyDataSetChanged();
-                                    }
-                                    if((temp <  usrThreshold.listThreshold[0].getValue()  && (!usrThreshold.listThreshold[0].isGreater()) && usrThreshold.listThreshold[0].isUse()) ||
-                                            ((humid <  usrThreshold.listThreshold[1].getValue()  && (!usrThreshold.listThreshold[1].isGreater()) && usrThreshold.listThreshold[1].isUse())) ||
-                                            ((gas <  usrThreshold.listThreshold[2].getValue()  && (!usrThreshold.listThreshold[2].isGreater()) && usrThreshold.listThreshold[2].isUse()))
-                                    ){
-                                        tvTemp.setTextColor(Color.RED);
-                                        Warning warning = new Warning(timestamp, usrThreshold.getMessage());
-                                        warningArrayList.add(warning);
-                                        listView.setAdapter(warningAdapter);
-                                        warningAdapter.notifyDataSetChanged();
+                                        notification(usrThreshold.getID(), usrThreshold.getMessage());
                                     }
 
-                                    notification(usrThreshold.getID(), usrThreshold.getMessage());
+//                                    if((temp >=  usrThreshold.listThreshold[0].getValue()  && usrThreshold.listThreshold[0].isGreater() && usrThreshold.listThreshold[0].isUse()) &&
+//                                            ((humid >=  usrThreshold.listThreshold[1].getValue()  && usrThreshold.listThreshold[1].isGreater() && usrThreshold.listThreshold[1].isUse())) &&
+//                                            ((gas >=  usrThreshold.listThreshold[2].getValue()  && usrThreshold.listThreshold[2].isGreater() && usrThreshold.listThreshold[2].isUse()))
+//                                    ){
+//                                        tvTemp.setTextColor(Color.RED);
+//                                        Warning warning = new Warning(timestamp, usrThreshold.getMessage());
+//                                        warningArrayList.add(warning);
+//                                        listView.setAdapter(warningAdapter);
+//                                        warningAdapter.notifyDataSetChanged();
+//                                        notification(usrThreshold.getID(), usrThreshold.getMessage());
+//                                    }
+//                                    if((temp <  usrThreshold.listThreshold[0].getValue()  && (!usrThreshold.listThreshold[0].isGreater()) && usrThreshold.listThreshold[0].isUse()) &&
+//                                            ((humid <  usrThreshold.listThreshold[1].getValue()  && (!usrThreshold.listThreshold[1].isGreater()) && usrThreshold.listThreshold[1].isUse())) &&
+//                                            ((gas <  usrThreshold.listThreshold[2].getValue()  && (!usrThreshold.listThreshold[2].isGreater()) && usrThreshold.listThreshold[2].isUse()))
+//                                    ){
+//                                        tvTemp.setTextColor(Color.RED);
+//                                        Warning warning = new Warning(timestamp, usrThreshold.getMessage());
+//                                        warningArrayList.add(warning);
+//                                        listView.setAdapter(warningAdapter);
+//                                        warningAdapter.notifyDataSetChanged();
+//                                        notification(usrThreshold.getID(), usrThreshold.getMessage());
+//                                    }
+
                                 }
                             }
 
@@ -339,33 +355,6 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
 
             }
         });
-        reference.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                //notification();
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-
 
         icSettings.setOnClickListener(new View.OnClickListener() {
             @Override
