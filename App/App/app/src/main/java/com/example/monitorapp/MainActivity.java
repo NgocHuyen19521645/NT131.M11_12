@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,9 +19,11 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,14 +62,17 @@ import java.util.List;
 import java.util.Vector;
 
 public class MainActivity extends AppCompatActivity  implements OnChartValueSelectedListener{
+
     private TextView tvHumid;
-    private TextView tvTemp;
+    private  TextView tvTemp;
     private TextView tvGas;
     private ListView listView;
+    private TextView selectedChart;
     private TextView icPrint;
     private TextView icSettings;
     private DatabaseReference reference;
     private Button btnClearWarning;
+    private Spinner spinner;
     private ArrayList<UserThreshold> userThresholdArrayList;
     private ArrayList<Warning> warningArrayList;
     WarningAdapter warningAdapter;
@@ -95,6 +101,7 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
                 });
 
         //
+        spinner = (Spinner) findViewById(R.id.spinner);
         tvHumid = (TextView) findViewById(R.id.idtvHumidValue);
         tvTemp = (TextView) findViewById(R.id.idtvTempValue);
         tvGas = (TextView) findViewById(R.id.idtvGasValue);
@@ -103,123 +110,25 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
         listView = (ListView) findViewById(R.id.idlvWarning);
         btnClearWarning = (Button) findViewById(R.id.clearLV);
 
+
+
         userThresholdArrayList = new ArrayList<>();
         warningArrayList = new ArrayList<>();
         warningAdapter = new WarningAdapter(warningArrayList);
+        ////
 
-        reference = FirebaseDatabase.getInstance().getReference().child("DHTSensor");
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Query lastQuery = reference.orderByKey().limitToLast(1);
-                lastQuery.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                            DHTSensor dhtSensor = snapshot.getValue(DHTSensor.class);
-                            //getData from Firebase
-                            double humid = dhtSensor.getHumidity();
-                            double temp = dhtSensor.getTemperature();
-                            long gas = dhtSensor.getGas();
-                            String timestamp = dhtSensor.getTime();
-                            //setext To Screen
-                            tvHumid.setText((String.valueOf(humid)));
-                            tvGas.setText(String.valueOf(gas));
-                            tvTemp.setText(String.valueOf(temp));
+        ArrayList<String> chartString = new ArrayList<>();
+        chartString.add("Temp");
+        chartString.add("Humid");
+        chartString.add("Gas");
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.chart_spinner, chartString);
+        this.spinner.setAdapter(adapter);
+        String selectedChart = this.spinner.getSelectedItem().toString();
 
-                            if(temp > 40 ){
-                                Warning warning = new Warning(timestamp, "High Temperature");
-                                warningArrayList.add(warning);
-                                listView.setAdapter(warningAdapter);
-                                warningAdapter.notifyDataSetChanged();
-                                notification("Default", "High Temperature");
-                            }
-                            if(humid < 20){
-                                Warning warning = new Warning(timestamp, "Low Humid");
-                                warningArrayList.add(warning);
-                                listView.setAdapter(warningAdapter);
-                                warningAdapter.notifyDataSetChanged();
-                                notification("Default", "Low Humid");
-                            }
-
-                            if(gas > 40000){
-                                Warning warning = new Warning(timestamp, "High Gas");
-                                warningArrayList.add(warning);
-                                listView.setAdapter(warningAdapter);
-                                warningAdapter.notifyDataSetChanged();
-                                notification("Default", "High Gas");
-                            }
-                            //Receive Data From Activity2
-
-
-                            Intent intent = getIntent();
-                            Bundle bundle = intent.getBundleExtra("sendUserThreshold");
-                            if(bundle != null){
-                                userThresholdArrayList = (ArrayList<UserThreshold>) bundle.getSerializable("lstuserThreshhold");
-                                for(int i=0; i < userThresholdArrayList.size(); i++){
-
-                                    UserThreshold usrThreshold = userThresholdArrayList.get(i);
-
-                                    if((temp >  usrThreshold.listThreshold[0].getValue()  && usrThreshold.listThreshold[0].isGreater() && usrThreshold.listThreshold[0].isUse()) ||
-                                            ((humid >  usrThreshold.listThreshold[1].getValue()  && usrThreshold.listThreshold[1].isGreater() && usrThreshold.listThreshold[1].isUse())) ||
-                                            ((gas >  usrThreshold.listThreshold[2].getValue()  && usrThreshold.listThreshold[2].isGreater() && usrThreshold.listThreshold[2].isUse()))
-                                    ){
-                                        Warning warning = new Warning(timestamp, usrThreshold.getMessage());
-                                        warningArrayList.add(warning);
-                                        listView.setAdapter(warningAdapter);
-                                        warningAdapter.notifyDataSetChanged();
-                                    }
-                                    if((temp <  usrThreshold.listThreshold[0].getValue()  && (!usrThreshold.listThreshold[0].isGreater()) && usrThreshold.listThreshold[0].isUse()) ||
-                                            ((humid <  usrThreshold.listThreshold[1].getValue()  && (!usrThreshold.listThreshold[1].isGreater()) && usrThreshold.listThreshold[1].isUse())) ||
-                                            ((gas <  usrThreshold.listThreshold[2].getValue()  && (!usrThreshold.listThreshold[2].isGreater()) && usrThreshold.listThreshold[2].isUse()))
-                                    ){
-                                        Warning warning = new Warning(timestamp, usrThreshold.getMessage());
-                                        warningArrayList.add(warning);
-                                        listView.setAdapter(warningAdapter);
-                                        warningAdapter.notifyDataSetChanged();
-                                    }
-
-                                    notification(usrThreshold.getID(), usrThreshold.getMessage());
-                                }
-                            }
-
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        icSettings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
-                startActivity(intent);
-            }
-        });
-        icPrint.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                takeScreenshot();
-            }
-        });
-        btnClearWarning.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                warningArrayList.clear();
-                listView.setAdapter(warningAdapter);
-                warningAdapter.notifyDataSetChanged();
-            }
-        });
+        /*
+        * Code bieu do o day ne
+        *
+        * */
 
         // Hiển thị biểu đồ
         int numData = 30;
@@ -262,7 +171,8 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                int choice = 1;
+
+                String choice = spinner.getSelectedItem().toString();
                 Query query = myRef.orderByKey().limitToLast(count);
                 query.addValueEventListener(new ValueEventListener() {
                     @Override
@@ -270,12 +180,12 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
                         int i=0;
                         double maxValue=0;
                         double minValue=50;
-                        if (choice==1)
+                        if (choice=="Humid")
                         {
                             maxValue = 0;
                             minValue = 100;
                         }
-                        else if (choice==2)
+                        else if (choice=="Gas")
                         {
                             maxValue = 0;
                             minValue = 40000;
@@ -285,10 +195,10 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
                             DHTSensor element = snapshot.getValue(DHTSensor.class);
                             switch (choice)
                             {
-                                case 1:
+                                case "Humid":
                                     realtimeData[i] = (float)element.getHumidity();
                                     break;
-                                case 2:
+                                case "Gas":
                                     realtimeData[i] = (float)element.getGas();
                                     break;
                                 default:
@@ -327,6 +237,155 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
+
+
+        //
+
+        reference = FirebaseDatabase.getInstance().getReference().child("DHTSensor");
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Query lastQuery = reference.orderByKey().limitToLast(1);
+                lastQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                            DHTSensor dhtSensor = snapshot.getValue(DHTSensor.class);
+                            //getData from Firebase
+                            double humid = dhtSensor.getHumidity();
+                            double temp = dhtSensor.getTemperature();
+                            long gas = dhtSensor.getGas();
+                            String timestamp = dhtSensor.getTime();
+                            //setext To Screen
+                            tvHumid.setText((String.valueOf(humid)));
+                            tvGas.setText(String.valueOf(gas));
+                            tvTemp.setText(String.valueOf(temp));
+
+                            if(temp > 35 ){
+                                tvTemp.setTextColor(Color.RED);
+                                Warning warning = new Warning(timestamp, "High Temperature");
+                                warningArrayList.add(warning);
+                                listView.setAdapter(warningAdapter);
+                                warningAdapter.notifyDataSetChanged();
+                                notification("Default", "High Temperature");
+                            }
+                            if(humid < 20){
+                                tvTemp.setTextColor(Color.RED);
+                                Warning warning = new Warning(timestamp, "Low Humid");
+                                warningArrayList.add(warning);
+                                listView.setAdapter(warningAdapter);
+                                warningAdapter.notifyDataSetChanged();
+                                notification("Default", "Low Humid");
+                            }
+
+                            if(gas > 40000){
+                                tvTemp.setTextColor(Color.RED);
+                                Warning warning = new Warning(timestamp, "High Gas");
+                                warningArrayList.add(warning);
+                                listView.setAdapter(warningAdapter);
+                                warningAdapter.notifyDataSetChanged();
+                                notification("Default", "High Gas");
+                            }
+                            //Receive Data From Activity2
+
+
+                            Intent intent = getIntent();
+                            Bundle bundle = intent.getBundleExtra("sendUserThreshold");
+                            if(bundle != null){
+                                userThresholdArrayList = (ArrayList<UserThreshold>) bundle.getSerializable("lstuserThreshhold");
+                                for(int i=0; i < userThresholdArrayList.size(); i++){
+
+                                    UserThreshold usrThreshold = userThresholdArrayList.get(i);
+
+                                    if((temp >  usrThreshold.listThreshold[0].getValue()  && usrThreshold.listThreshold[0].isGreater() && usrThreshold.listThreshold[0].isUse()) ||
+                                            ((humid >  usrThreshold.listThreshold[1].getValue()  && usrThreshold.listThreshold[1].isGreater() && usrThreshold.listThreshold[1].isUse())) ||
+                                            ((gas >  usrThreshold.listThreshold[2].getValue()  && usrThreshold.listThreshold[2].isGreater() && usrThreshold.listThreshold[2].isUse()))
+                                    ){
+                                        tvTemp.setTextColor(Color.RED);
+                                        Warning warning = new Warning(timestamp, usrThreshold.getMessage());
+                                        warningArrayList.add(warning);
+                                        listView.setAdapter(warningAdapter);
+                                        warningAdapter.notifyDataSetChanged();
+                                    }
+                                    if((temp <  usrThreshold.listThreshold[0].getValue()  && (!usrThreshold.listThreshold[0].isGreater()) && usrThreshold.listThreshold[0].isUse()) ||
+                                            ((humid <  usrThreshold.listThreshold[1].getValue()  && (!usrThreshold.listThreshold[1].isGreater()) && usrThreshold.listThreshold[1].isUse())) ||
+                                            ((gas <  usrThreshold.listThreshold[2].getValue()  && (!usrThreshold.listThreshold[2].isGreater()) && usrThreshold.listThreshold[2].isUse()))
+                                    ){
+                                        tvTemp.setTextColor(Color.RED);
+                                        Warning warning = new Warning(timestamp, usrThreshold.getMessage());
+                                        warningArrayList.add(warning);
+                                        listView.setAdapter(warningAdapter);
+                                        warningAdapter.notifyDataSetChanged();
+                                    }
+
+                                    notification(usrThreshold.getID(), usrThreshold.getMessage());
+                                }
+                            }
+
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        reference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                //notification();
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+
+        icSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                startActivity(intent);
+            }
+        });
+        icPrint.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takeScreenshot();
+            }
+        });
+        btnClearWarning.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                warningArrayList.clear();
+                listView.setAdapter(warningAdapter);
+                warningAdapter.notifyDataSetChanged();
             }
         });
     }
@@ -381,7 +440,6 @@ public class MainActivity extends AppCompatActivity  implements OnChartValueSele
         intent.setDataAndType(uri, "image/*");
         startActivity(intent);
     }
-
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
