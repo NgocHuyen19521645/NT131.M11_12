@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,9 +19,11 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -175,10 +178,12 @@ public class MainActivity extends AppCompatActivity  {
     private  TextView tvTemp;
     private TextView tvGas;
     private ListView listView;
+    private TextView selectedChart;
     private TextView icPrint;
     private TextView icSettings;
     private DatabaseReference reference;
     private Button btnClearWarning;
+    private Spinner spinner;
     private ArrayList<UserThreshold> userThresholdArrayList;
     private ArrayList<Warning> warningArrayList;
     WarningAdapter warningAdapter;
@@ -200,6 +205,7 @@ public class MainActivity extends AppCompatActivity  {
                 });
 
         //
+        spinner = (Spinner) findViewById(R.id.spinner);
         tvHumid = (TextView) findViewById(R.id.idtvHumidValue);
         tvTemp = (TextView) findViewById(R.id.idtvTempValue);
         tvGas = (TextView) findViewById(R.id.idtvGasValue);
@@ -208,9 +214,29 @@ public class MainActivity extends AppCompatActivity  {
         listView = (ListView) findViewById(R.id.idlvWarning);
         btnClearWarning = (Button) findViewById(R.id.clearLV);
 
+
+
         userThresholdArrayList = new ArrayList<>();
         warningArrayList = new ArrayList<>();
         warningAdapter = new WarningAdapter(warningArrayList);
+        ////
+
+        ArrayList<String> chartString = new ArrayList<>();
+        chartString.add("Temp");
+        chartString.add("Humid");
+        chartString.add("Gas");
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.chart_spinner, chartString);
+        this.spinner.setAdapter(adapter);
+        String selectedChart = this.spinner.getSelectedItem().toString();
+
+        /*
+        * Code bieu do o day ne
+        *
+        * */
+
+
+
+        //
 
         reference = FirebaseDatabase.getInstance().getReference().child("DHTSensor");
         reference.addValueEventListener(new ValueEventListener() {
