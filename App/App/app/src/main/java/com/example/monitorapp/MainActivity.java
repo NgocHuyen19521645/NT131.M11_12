@@ -237,14 +237,14 @@ public class MainActivity extends AppCompatActivity  {
                                 warningArrayList.add(warning);
                                 listView.setAdapter(warningAdapter);
                                 warningAdapter.notifyDataSetChanged();
-                                notification();
+                                notification("Default", "High Temperature");
                             }
                             if(humid < 20){
                                 Warning warning = new Warning(timestamp, "Low Humid");
                                 warningArrayList.add(warning);
                                 listView.setAdapter(warningAdapter);
                                 warningAdapter.notifyDataSetChanged();
-                                notification();
+                                notification("Default", "Low Humid");
                             }
 
                             if(gas > 40000){
@@ -252,7 +252,7 @@ public class MainActivity extends AppCompatActivity  {
                                 warningArrayList.add(warning);
                                 listView.setAdapter(warningAdapter);
                                 warningAdapter.notifyDataSetChanged();
-                                notification();
+                                notification("Default", "High Gas");
                             }
                             //Receive Data From Activity2
 
@@ -262,26 +262,29 @@ public class MainActivity extends AppCompatActivity  {
                             if(bundle != null){
                                 userThresholdArrayList = (ArrayList<UserThreshold>) bundle.getSerializable("lstuserThreshhold");
                                 for(int i=0; i < userThresholdArrayList.size(); i++){
-                                    if((temp >  userThresholdArrayList.get(i).listThreshold[0].getValue()  && userThresholdArrayList.get(i).listThreshold[0].isGreater() && userThresholdArrayList.get(i).listThreshold[0].isUse()) ||
-                                            ((humid >  userThresholdArrayList.get(i).listThreshold[1].getValue()  && userThresholdArrayList.get(i).listThreshold[1].isGreater() && userThresholdArrayList.get(i).listThreshold[1].isUse())) ||
-                                            ((gas >  userThresholdArrayList.get(i).listThreshold[2].getValue()  && userThresholdArrayList.get(i).listThreshold[2].isGreater() && userThresholdArrayList.get(i).listThreshold[2].isUse()))
+
+                                    UserThreshold usrThreshold = userThresholdArrayList.get(i);
+
+                                    if((temp >  usrThreshold.listThreshold[0].getValue()  && usrThreshold.listThreshold[0].isGreater() && usrThreshold.listThreshold[0].isUse()) ||
+                                            ((humid >  usrThreshold.listThreshold[1].getValue()  && usrThreshold.listThreshold[1].isGreater() && usrThreshold.listThreshold[1].isUse())) ||
+                                            ((gas >  usrThreshold.listThreshold[2].getValue()  && usrThreshold.listThreshold[2].isGreater() && usrThreshold.listThreshold[2].isUse()))
                                     ){
-                                        Warning warning = new Warning(timestamp, userThresholdArrayList.get(i).getMessage());
+                                        Warning warning = new Warning(timestamp, usrThreshold.getMessage());
                                         warningArrayList.add(warning);
                                         listView.setAdapter(warningAdapter);
                                         warningAdapter.notifyDataSetChanged();
-                                        notification();
                                     }
-                                    if((temp <  userThresholdArrayList.get(i).listThreshold[0].getValue()  && (!userThresholdArrayList.get(i).listThreshold[0].isGreater()) && userThresholdArrayList.get(i).listThreshold[0].isUse()) ||
-                                            ((humid <  userThresholdArrayList.get(i).listThreshold[1].getValue()  && (!userThresholdArrayList.get(i).listThreshold[1].isGreater()) && userThresholdArrayList.get(i).listThreshold[1].isUse())) ||
-                                            ((gas <  userThresholdArrayList.get(i).listThreshold[2].getValue()  && (!userThresholdArrayList.get(i).listThreshold[2].isGreater()) && userThresholdArrayList.get(i).listThreshold[2].isUse()))
+                                    if((temp <  usrThreshold.listThreshold[0].getValue()  && (!usrThreshold.listThreshold[0].isGreater()) && usrThreshold.listThreshold[0].isUse()) ||
+                                            ((humid <  usrThreshold.listThreshold[1].getValue()  && (!usrThreshold.listThreshold[1].isGreater()) && usrThreshold.listThreshold[1].isUse())) ||
+                                            ((gas <  usrThreshold.listThreshold[2].getValue()  && (!usrThreshold.listThreshold[2].isGreater()) && usrThreshold.listThreshold[2].isUse()))
                                     ){
-                                        Warning warning = new Warning(timestamp, userThresholdArrayList.get(i).getMessage());
+                                        Warning warning = new Warning(timestamp, usrThreshold.getMessage());
                                         warningArrayList.add(warning);
                                         listView.setAdapter(warningAdapter);
                                         warningAdapter.notifyDataSetChanged();
-                                        notification();
                                     }
+
+                                    notification(usrThreshold.getID(), usrThreshold.getMessage());
                                 }
                             }
 
@@ -303,7 +306,7 @@ public class MainActivity extends AppCompatActivity  {
         reference.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                notification();
+                //notification();
             }
 
             @Override
@@ -350,7 +353,8 @@ public class MainActivity extends AppCompatActivity  {
             }
         });
     }
-    private void notification(){
+
+    private void notification(String notiCode, String message){
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             NotificationChannel channel = new NotificationChannel("n", "n", NotificationManager.IMPORTANCE_DEFAULT);
             NotificationManager manager = getSystemService(NotificationManager.class);
@@ -358,8 +362,8 @@ public class MainActivity extends AppCompatActivity  {
         }
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "n")
                 .setSmallIcon(R.drawable.ic_baseline_print_24)
-                .setContentTitle("alo alo")
-                .setContentText("Thong bao neeee")
+                .setContentTitle("NotiID: " + notiCode)
+                .setContentText("Messsage: " + message)
                 .setAutoCancel(true);
         NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
         managerCompat.notify(999, builder.build());
