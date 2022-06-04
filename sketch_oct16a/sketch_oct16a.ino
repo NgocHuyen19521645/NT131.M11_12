@@ -18,7 +18,7 @@
 #define DHTPIN 2     // what digital pin we're connected to
 #define LIGHT 3
 #define FIREBASE_HOST "trusty-gradient-326214-default-rtdb.asia-southeast1.firebasedatabase.app"
-#define FIREBASE_AUTH "GH6fNjR6LMFtyw29e3ZizETYidWx53oNeV9msVO8"
+#define FIREBASE_AUTH "j8bRnAxzJSi5yOm0hytksLqDQPf0ktswSRYO2gqJ"
 
 // Chọn loại cảm biến cho phù hợp ---------------------------------------------------------------------------------------
 #define DHTTYPE DHT11   // DHT 11
@@ -28,8 +28,8 @@
 DHT dht(DHTPIN, DHTTYPE);
 
 // Wifi SSID, pass
-const char* ssid = "Ngoc Phong";
-const char* pass = "01657096210";
+const char* ssid = "UiTiOt-E3.1";
+const char* pass = "UiTiOtAP";
 
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org");
@@ -54,7 +54,6 @@ void setup() {
   // Print the IP address
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
   
   dht.begin();
@@ -96,29 +95,12 @@ void loop() {
   float f = dht.readTemperature(true);
   unsigned long epoch;
   String curTime = getCurrentTime(epoch);
-  Serial.println(curTime);
-
-  DynamicJsonBuffer jsonBuffer;
-  // Push to Firebase
-  JsonObject& temperatureObject = jsonBuffer.createObject();
-  temperatureObject["Temperature"] = t;
-  temperatureObject["Humidity"] = h;
-  temperatureObject["Gas"] = gas;
-  temperatureObject["Time"] = curTime;
-  Firebase.set("/DHTSensor/"+String(epoch), temperatureObject);
-  if(Firebase.failed())
-  {
-    Serial.println("Setting failed");
-    Serial.println(Firebase.error());
-    return;
-  }
-
-  // Kiểm tra có đọc được dữ liệu từ sensor hay không
+    // Kiểm tra có đọc được dữ liệu từ sensor hay không
   if (isnan(h) || isnan(t) || isnan(f)) {
     Serial.println("Failed to read from DHT sensor!");
     return;
   }
-
+  Serial.println(curTime);
   // Compute heat index in Fahrenheit (the default)
   float hif = dht.computeHeatIndex(f, h);
   // Compute heat index in Celsius (isFahreheit = false)
@@ -139,4 +121,20 @@ void loop() {
   Serial.print(" *C ");
   Serial.print(hif);
   Serial.println(" *F");
+
+  DynamicJsonBuffer jsonBuffer; 
+  // Push to Firebase
+  JsonObject& temperatureObject = jsonBuffer.createObject();
+  temperatureObject["Temperature"] = t;
+  temperatureObject["Humidity"] = h;
+  temperatureObject["Gas"] = gas;
+  temperatureObject["Time"] = curTime;
+  Firebase.set("/DHTSensor/"+String(epoch), temperatureObject);
+  
+ if(Firebase.failed())
+  {
+    Serial.println("Setting failed");
+    Serial.println(Firebase.error());
+    return;
+  }
 }
